@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package handlers;
+
+service PaymentService {
+    rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
+    rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse);
+    rpc UpdatePayment(UpdatePaymentRequest) returns (UpdatePaymentResponse);
+    rpc DeletePayment(DeletePaymentRequest) returns (DeletePaymentResponse);
+    rpc ListPayments(ListPaymentsRequest) returns (ListPaymentsResponse);
+}
+
+message CreatePaymentRequest {
+    double amount = 1;
+    string currency = 2;
+}
+
+message CreatePaymentResponse {
+    bool success = 1;
+}
+
+message GetPaymentRequest {
+    int32 id = 1;
+}
+
+message GetPaymentResponse {
+    int32 id = 1;
+    double amount = 2;
+    string currency = 3;
+}
+
+message UpdatePaymentRequest {
+    int32 id = 1;
+    double amount = 2;
+    string currency = 3;
+}
+
+message UpdatePaymentResponse {
+    bool success = 1;
+}
+
+message DeletePaymentRequest {
+    int32 id = 1;
+}
+
+message DeletePaymentResponse {
+    bool success = 1;
+}
+
+message ListPaymentsRequest {
+    string filter = 1;
+    string sort = 2;
+    int32 page = 3;
+    int32 pageSize = 4;
+}
+
+message ListPaymentsResponse {
+    repeated GetPaymentResponse payments = 1;
+}
