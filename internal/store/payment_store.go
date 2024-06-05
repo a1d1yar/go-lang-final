@@ -7,7 +7,7 @@ import (
 )
 
 type PaymentStore struct {
-	db *sql.DB
+	DB *sql.DB
 }
 
 func NewPaymentStore(dsn string) (*PaymentStore, error) {
@@ -20,18 +20,18 @@ func NewPaymentStore(dsn string) (*PaymentStore, error) {
 		return nil, fmt.Errorf("failed to connect to database: %v", err)
 	}
 
-	return &PaymentStore{db: db}, nil
+	return &PaymentStore{DB: db}, nil
 }
 
 func (s *PaymentStore) CreatePayment(payment models.Payment) error {
 	query := `INSERT INTO payments (id, amount, currency) VALUES ($1, $2, $3)`
-	_, err := s.db.Exec(query, payment.ID, payment.Amount, payment.Currency)
+	_, err := s.DB.Exec(query, payment.ID, payment.Amount, payment.Currency)
 	return err
 }
 
 func (s *PaymentStore) GetPayment(id int64) (*models.Payment, error) {
 	query := `SELECT id, amount, currency FROM payments WHERE id = $1`
-	row := s.db.QueryRow(query, id)
+	row := s.DB.QueryRow(query, id)
 
 	var payment models.Payment
 	if err := row.Scan(&payment.ID, &payment.Amount, &payment.Currency); err != nil {
@@ -46,19 +46,19 @@ func (s *PaymentStore) GetPayment(id int64) (*models.Payment, error) {
 
 func (s *PaymentStore) UpdatePayment(id int64, payment models.Payment) error {
 	query := `UPDATE payments SET amount = $2, currency = $3 WHERE id = $1`
-	_, err := s.db.Exec(query, id, payment.Amount, payment.Currency)
+	_, err := s.DB.Exec(query, id, payment.Amount, payment.Currency)
 	return err
 }
 
 func (s *PaymentStore) DeletePayment(id int64) error {
 	query := `DELETE FROM payments WHERE id = $1`
-	_, err := s.db.Exec(query, id)
+	_, err := s.DB.Exec(query, id)
 	return err
 }
 
 func (s *PaymentStore) ListPayments(currency string, amount string, page int, pageSize int) ([]models.Payment, error) {
 	query := `SELECT id, amount, currency FROM payments WHERE currency = $1 AND amount = $2 LIMIT $3 OFFSET $4`
-	rows, err := s.db.Query(query, currency, amount, pageSize, (page-1)*pageSize)
+	rows, err := s.DB.Query(query, currency, amount, pageSize, (page-1)*pageSize)
 	if err != nil {
 		return nil, err
 	}

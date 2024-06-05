@@ -10,6 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type PaymentService struct {
+	proto.UnimplementedPaymentServiceServer
+	store *store.PaymentStore
+}
+
 func TestGRPCCreatePayment(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
@@ -19,7 +24,7 @@ func TestGRPCCreatePayment(t *testing.T) {
 		WithArgs(1, 100.0, "USD").
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	s := &store.PaymentStore{db: db}
+	s := &store.PaymentStore{DB: db}
 
 	h := &PaymentService{store: s}
 	req := &proto.CreatePaymentRequest{Id: 1, Amount: 100.0, Currency: "USD"}
@@ -41,7 +46,7 @@ func TestGRPCGetPayment(t *testing.T) {
 		WithArgs(1).
 		WillReturnRows(rows)
 
-	s := &store.PaymentStore{db: db}
+	s := &store.PaymentStore{DB: db}
 	h := &PaymentService{store: s}
 	req := &proto.GetPaymentRequest{Id: 1}
 
@@ -59,7 +64,7 @@ func TestGRPCUpdatePayment(t *testing.T) {
 		WithArgs(100.0, "USD", 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	s := &store.PaymentStore{db: db}
+	s := &store.PaymentStore{DB: db}
 	h := &PaymentService{store: s}
 	req := &proto.UpdatePaymentRequest{Id: 1, Amount: 100.0, Currency: "USD"}
 
@@ -77,7 +82,7 @@ func TestGRPCDeletePayment(t *testing.T) {
 		WithArgs(1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	s := &store.PaymentStore{db: db}
+	s := &store.PaymentStore{DB: db}
 	h := &PaymentService{store: s}
 	req := &proto.DeletePaymentRequest{Id: 1}
 
@@ -99,7 +104,7 @@ func TestGRPCListPayments(t *testing.T) {
 		WithArgs("USD", "100.00", 10, 0).
 		WillReturnRows(rows)
 
-	s := &store.PaymentStore{db: db}
+	s := &store.PaymentStore{DB: db}
 	h := &PaymentService{store: s}
 	req := &proto.ListPaymentsRequest{Currency: "USD", Amount: 100.0, Page: 1, PageSize: 10}
 

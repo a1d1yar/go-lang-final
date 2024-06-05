@@ -19,7 +19,7 @@ func TestCreatePayment(t *testing.T) {
 		WithArgs(1, 100.0, "USD").
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	s := &store.PaymentStore{db: db}
+	s := &store.PaymentStore{DB: db}
 	err = s.CreatePayment(models.Payment{ID: 1, Amount: 100.0, Currency: "USD"})
 	assert.NoError(t, err)
 }
@@ -36,7 +36,7 @@ func TestGetPayment(t *testing.T) {
 		WithArgs(1).
 		WillReturnRows(rows)
 
-	s := &store.PaymentStore{db: db}
+	s := &store.PaymentStore{DB: db}
 	payment, err := s.GetPayment(1)
 	assert.NoError(t, err)
 	assert.Equal(t, &models.Payment{ID: 1, Amount: 100.0, Currency: "USD"}, payment)
@@ -51,7 +51,7 @@ func TestUpdatePayment(t *testing.T) {
 		WithArgs(100.0, "USD", 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	s := &store.PaymentStore{db: db}
+	s := &store.PaymentStore{DB: db}
 	err = s.UpdatePayment(1, models.Payment{ID: 1, Amount: 100.0, Currency: "USD"})
 	assert.NoError(t, err)
 }
@@ -65,7 +65,7 @@ func TestDeletePayment(t *testing.T) {
 		WithArgs(1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	s := &store.PaymentStore{db: db}
+	s := &store.PaymentStore{DB: db}
 	err = s.DeletePayment(1)
 	assert.NoError(t, err)
 }
@@ -83,7 +83,7 @@ func TestListingPayments(t *testing.T) {
 		WithArgs("USD", "100.00", 10, 0).
 		WillReturnRows(rows)
 
-	s := &store.PaymentStore{db: db}
+	s := &store.PaymentStore{DB: db}
 	payments, err := s.ListPayments("USD", "100.00", 1, 10)
 	assert.NoError(t, err)
 	assert.Len(t, payments, 2)
