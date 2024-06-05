@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-package handlers;
+package proto;
+
+option go_package = "/proto";
 
 service PaymentService {
     rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
@@ -11,8 +13,9 @@ service PaymentService {
 }
 
 message CreatePaymentRequest {
-    double amount = 1;
-    string currency = 2;
+    int64 id = 1;
+    double amount = 2;
+    string currency = 3;
 }
 
 message CreatePaymentResponse {
@@ -20,17 +23,17 @@ message CreatePaymentResponse {
 }
 
 message GetPaymentRequest {
-    int32 id = 1;
+    int64 id = 1;
 }
 
 message GetPaymentResponse {
-    int32 id = 1;
+    int64 id = 1;
     double amount = 2;
     string currency = 3;
 }
 
 message UpdatePaymentRequest {
-    int32 id = 1;
+    int64 id = 1;
     double amount = 2;
     string currency = 3;
 }
@@ -40,7 +43,7 @@ message UpdatePaymentResponse {
 }
 
 message DeletePaymentRequest {
-    int32 id = 1;
+    int64 id = 1;
 }
 
 message DeletePaymentResponse {
@@ -48,12 +51,18 @@ message DeletePaymentResponse {
 }
 
 message ListPaymentsRequest {
-    string filter = 1;
-    string sort = 2;
+    string currency = 1;
+    double amount = 2;
     int32 page = 3;
     int32 pageSize = 4;
 }
 
 message ListPaymentsResponse {
-    repeated GetPaymentResponse payments = 1;
+    repeated Payment payments = 1;
+}
+
+message Payment {
+    int64 id = 1;
+    double amount = 2;
+    string currency = 3;
 }

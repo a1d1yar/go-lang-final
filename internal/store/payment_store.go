@@ -1,86 +1,70 @@
 package store
 
 import (
-	"context"
+	"database/sql"
 	"fmt"
 	"go-lang-final/internal/models"
-	"strconv"
-	"strings"
-
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type PaymentStore struct {
-	pool *pgxpool.Pool
+	db *sql.DB
 }
 
 func NewPaymentStore(dsn string) (*PaymentStore, error) {
-	pool, err := pgxpool.Connect(context.Background(), dsn)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open database: %v", err)
 	}
-	return &PaymentStore{pool: pool}, nil
+
+	if err = db.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %v", err)
+	}
+
+	return &PaymentStore{db: db}, nil
 }
 
 func (s *PaymentStore) CreatePayment(payment models.Payment) error {
-	_, err := s.pool.Exec(context.Background(),
-		"INSERT INTO payments (amount, currency) VALUES ($1, $2)",
-		payment.Amount, payment.Currency)
+	query := `INSERT INTO payments (id, amount, currency) VALUES ($1, $2, $3)`
+	_, err := s.db.Exec(query, payment.ID, payment.Amount, payment.Currency)
 	return err
 }
 
-func (s *PaymentStore) GetPayment(id int) (models.Payment, error) {
+func (s *PaymentStore) GetPayment(id int64) (*models.Payment, error) {
+	query := `SELECT id, amount, currency FROM payments WHERE id = $1`
+	row := s.db.QueryRow(query, id)
+
 	var payment models.Payment
-	err := s.pool.QueryRow(context.Background(),
-		"SELECT id, amount, currency FROM payments WHERE id = $1", id).
-		Scan(&payment.ID, &payment.Amount, &payment.Currency)
-	return payment, err
+	if err := row.Scan(&payment.ID, &payment.Amount, &payment.Currency); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("payment not found")
+		}
+		return nil, err
+	}
+
+	return &payment, nil
 }
 
-func (s *PaymentStore) UpdatePayment(id int, payment models.Payment) error {
-	_, err := s.pool.Exec(context.Background(),
-		"UPDATE payments SET amount = $1, currency = $2 WHERE id = $3",
-		payment.Amount, payment.Currency, id)
+func (s *PaymentStore) UpdatePayment(id int64, payment models.Payment) error {
+	query := `UPDATE payments SET amount = $2, currency = $3 WHERE id = $1`
+	_, err := s.db.Exec(query, id, payment.Amount, payment.Currency)
 	return err
 }
 
-func (s *PaymentStore) DeletePayment(id int) error {
-	_, err := s.pool.Exec(context.Background(), "DELETE FROM payments WHERE id = $1", id)
+func (s *PaymentStore) DeletePayment(id int64) error {
+	query := `DELETE FROM payments WHERE id = $1`
+	_, err := s.db.Exec(query, id)
 	return err
 }
 
-func (s *PaymentStore) ListPayments(filter string, sort string, page int, pageSize int) ([]models.Payment, error) {
-	var payments []models.Payment
-	var conditions []string
-	var params []interface{}
-	var sorting string
-
-	if filter != "" {
-		conditions = append(conditions, "currency ILIKE $"+strconv.Itoa(len(params)+1))
-		params = append(params, "%"+filter+"%")
-	}
-
-	if sort != "" {
-		sorting = fmt.Sprintf("ORDER BY %s", sort)
-	} else {
-		sorting = "ORDER BY id"
-	}
-
-	query := fmt.Sprintf(
-		"SELECT id, amount, currency FROM payments WHERE %s %s LIMIT $%d OFFSET $%d",
-		strings.Join(conditions, " AND "),
-		sorting,
-		len(params)+1,
-		len(params)+2,
-	)
-	params = append(params, pageSize, (page-1)*pageSize)
-
-	rows, err := s.pool.Query(context.Background(), query, params...)
+func (s *PaymentStore) ListPayments(currency string, amount string, page int, pageSize int) ([]models.Payment, error) {
+	query := `SELECT id, amount, currency FROM payments WHERE currency = $1 AND amount = $2 LIMIT $3 OFFSET $4`
+	rows, err := s.db.Query(query, currency, amount, pageSize, (page-1)*pageSize)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
+	var payments []models.Payment
 	for rows.Next() {
 		var payment models.Payment
 		if err := rows.Scan(&payment.ID, &payment.Amount, &payment.Currency); err != nil {
@@ -88,5 +72,10 @@ func (s *PaymentStore) ListPayments(filter string, sort string, page int, pageSi
 		}
 		payments = append(payments, payment)
 	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return payments, nil
 }

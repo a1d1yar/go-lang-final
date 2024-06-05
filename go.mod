@@ -25,6 +25,7 @@ require (
 
 require (
 	github.com/jackc/pgx/v4 v4.18.3
+	github.com/lib/pq v1.10.9
 	golang.org/x/sys v0.18.0 // indirect
 	google.golang.org/grpc v1.64.0
 )
