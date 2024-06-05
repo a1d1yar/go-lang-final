@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/a1d1yar/go-lang-final/internal/models"
+	"go-lang-final/internal/models"
 
-	"github.com/a1d1yar/go-lang-final/internal/store"
+	"go-lang-final/internal/store"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"

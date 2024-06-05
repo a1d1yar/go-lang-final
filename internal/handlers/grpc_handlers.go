@@ -3,12 +3,12 @@ package handlers
 import (
 	"context"
 
+	"go-lang-final/internal/models"
+	"go-lang-final/internal/store"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"github.com/a1d1yar/go-lang-final/internal/models"
-	"github.com/a1d1yar/go-lang-final/internal/store"
 )
 
 func RegisterGRPCHandlers(grpcServer *grpc.Server, store *store.PaymentStore) {

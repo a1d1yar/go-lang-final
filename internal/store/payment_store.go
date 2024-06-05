@@ -3,10 +3,9 @@ package store
 import (
 	"context"
 	"fmt"
+	"go-lang-final/internal/models"
 	"strconv"
 	"strings"
-
-	"github.com/a1d1yar/go-lang-final/internal/models"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
