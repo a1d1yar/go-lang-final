@@ -14,7 +14,7 @@ import (
 
 func main() {
 	logger := logrus.New()
-	dsn := "postgresql://postgre:Aldiyar2004@localhost:5432/library"
+	dsn := "postgresql://postgres:Aldiyar2004@localhost:5432/library"
 	paymentStore, err := store.NewPaymentStore(dsn)
 	if err != nil {
 		logger.Fatalf("Failed to connect to the database: %v", err)
